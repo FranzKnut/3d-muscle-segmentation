@@ -16,10 +16,10 @@ from deepvoxnet2.components.transformers import (
     Threshold,
 )
 
-data_path = "./data/BMD"
-output_path = "./prediction/BMD"
+data_path = "./data/phil"
+output_path = "./prediction/phil/li"
 model_weights_path = "./models/li_model_weights.h5"
-case_ids = ["cc", "early"]
+case_ids = ["test"]
 
 # create the mirc dataset
 dataset = Dataset("LI", data_path)
