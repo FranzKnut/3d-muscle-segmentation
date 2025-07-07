@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from functools import partial
-from collections import Iterable
+from collections.abc import Iterable
 from pymirc.metrics.tf_metrics import generalized_dice_coeff
 from deepvoxnet2.backwards_compatibility.metrics import *
 
