@@ -5,7 +5,6 @@ from deepvoxnet2.components.sampler import MircSampler
 from deepvoxnet2.keras.models.unet_generalized import create_generalized_unet_model
 from deepvoxnet2.components.model import DvnModel
 from deepvoxnet2.components.transformers import (
-    Crop,
     MircInput,
     KerasModel,
     Put,
@@ -49,8 +48,7 @@ for p in output_dirs:
     if not os.path.isdir(p):
         os.makedirs(p)
 
-full_size = (163*2, 352, 355)
-split_size = (163, 352, 355)
+full_size = (163, 352, 355)
 segment_size = (163, 352, 55)
 true_input_size = (189, 378, 81)
 
@@ -107,11 +105,6 @@ x_input_2 = MircInput(
 x_input_1 = Resize(full_size)(x_input_1)
 x_input_2 = Resize(full_size)(x_input_2)
 mask_input = Threshold(lower_threshold=300)(x_input_1)
-
-x_input_1 = Crop(mask_input, split_size)(x_input_1)
-x_input_2 = Crop(mask_input, split_size)(x_input_2)
-mask_input = Crop(mask_input, split_size)(mask_input)
-
 x_path_1, x_path_2 = RandomCropFullImage(
     mask_input, true_input_size, grid_size=segment_size, nonzero=True
 )(x_input_1, x_input_2)
