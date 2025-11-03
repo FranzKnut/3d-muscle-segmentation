@@ -17,21 +17,23 @@ from deepvoxnet2.components.transformers import (
 )
 
 data_path = "./data/main"
-output_path = "./prediction/main/li"
+output_path = "./prediction/main"
 model_weights_path = "./models/li_model_weights.h5"
-case_ids = ["C9_T0_01.04.2025"]
+case_ids = [
+    d for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))
+]
 
 # create the mirc dataset
 dataset = Dataset("LI", data_path)
 for cid in case_ids:
+    _path = os.path.join(data_path, cid)
+    files = os.listdir(_path)
+    op_file = [f for f in files if "OP-gesamt_SV" in f][0]
+    ip_file = [f for f in files if "IP-gesamt_SV" in f][0]
     mirc_case = Case(cid)
     record = Record("0")
-    record.add(
-        NiftiFileModality("OP", os.path.join(data_path, "{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
-    )
-    record.add(
-        NiftiFileModality("IP", os.path.join(data_path, "{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
-    )
+    record.add(NiftiFileModality("OP", os.path.join(data_path, cid, op_file)))
+    record.add(NiftiFileModality("IP", os.path.join(data_path, cid, ip_file)))
     # record.add(
     #     NiftiFileModality(
     #         "Mask", os.path.join(data_path, "Mask_{}_r.nii.gz".format(cid))
@@ -48,7 +50,7 @@ for p in output_dirs:
     if not os.path.isdir(p):
         os.makedirs(p)
 
-full_size = (163, 352, 355)
+# full_size = (163, 352, 355)
 segment_size = (163, 352, 55)
 true_input_size = (189, 378, 81)
 
@@ -97,8 +99,8 @@ mask_input = MircInput(
 #     name="mask_input",
 # )
 
-x_input_1 = Resize(full_size)(x_input_1)
-x_input_2 = Resize(full_size)(x_input_2)
+# x_input_1 = Resize(full_size)(x_input_1)
+# x_input_2 = Resize(full_size)(x_input_2)
 mask_input = Threshold(lower_threshold=300)(x_input_1)
 x_path_1, x_path_2 = RandomCropFullImage(
     mask_input, true_input_size, grid_size=segment_size, nonzero=True
@@ -109,8 +111,7 @@ x_dvn_val = Buffer(buffer_size=None, drop_remainder=False)(x_dvn_val)
 x_dvn_val = Put(x_input_1, keep_counts=True)(x_dvn_val)
 x_dvn_val = ArgMax()(x_dvn_val)
 
-
-dvn_model = DvnModel(outputs={"pred": [x_dvn_val]})
+dvn_model = DvnModel(outputs={"li_pred": [x_dvn_val]})
 
 if len(output_dirs) != 0:
-    dvn_model.predict("pred", sampler, output_dirs=output_dirs)
+    dvn_model.predict("li_pred", sampler, output_dirs=output_dirs)
