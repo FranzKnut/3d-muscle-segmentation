@@ -27,10 +27,10 @@ for cid in case_ids:
     mirc_case = Case(cid)
     record = Record("0")
     record.add(
-        NiftiFileModality("OP", os.path.join(data_path, "OP_{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
+        NiftiFileModality("OP", os.path.join(data_path, "{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
     )
     record.add(
-        NiftiFileModality("IP", os.path.join(data_path, "IP_{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
+        NiftiFileModality("IP", os.path.join(data_path, "{}_OP-gesamt_RB_SS15.nii.gz".format(cid)))
     )
     # record.add(
     #     NiftiFileModality(
