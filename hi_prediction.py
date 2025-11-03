@@ -6,6 +6,7 @@ from deepvoxnet2.keras.models.unet_generalized import create_generalized_unet_mo
 from deepvoxnet2.components.model import DvnModel
 from deepvoxnet2.components.transformers import (
     Crop,
+    GridCrop,
     MircInput,
     KerasModel,
     Put,
@@ -17,10 +18,10 @@ from deepvoxnet2.components.transformers import (
     Threshold,
 )
 
-data_path = "./data/BMD"
-output_path = "./prediction/BMD"
+data_path = "./data/main"
+output_path = "./prediction/main"
 model_weights_path = "./models/hi_model_weights.h5"
-case_ids = ["intermediate", "end"]
+case_ids = ["C9_T0_01.04.2025"]
 
 # create the mirc dataset
 dataset = Dataset("HI", data_path)
@@ -28,16 +29,20 @@ for cid in case_ids:
     mirc_case = Case(cid)
     record = Record("0")
     record.add(
-        NiftiFileModality("OP", os.path.join(data_path, "OP_{}_r.nii.gz".format(cid)))
-    )
-    record.add(
-        NiftiFileModality("IP", os.path.join(data_path, "IP_{}_r.nii.gz".format(cid)))
+        NiftiFileModality(
+            "OP", os.path.join(data_path, "{}_OP-gesamt_RB_SS15.nii.gz".format(cid))
+        )
     )
     record.add(
         NiftiFileModality(
-            "Mask", os.path.join(data_path, "Mask_{}_r.nii.gz".format(cid))
+            "IP", os.path.join(data_path, "{}_IP-gesamt_RB_SS15.nii.gz".format(cid))
         )
     )
+    # record.add(
+    #     NiftiFileModality(
+    #         "Mask", os.path.join(data_path, "Mask_{}_r.nii.gz".format(cid))
+    #     )
+    # )
     mirc_case.add(record)
     dataset.add(mirc_case)
 mirc = Mirc(dataset)
@@ -49,7 +54,7 @@ for p in output_dirs:
     if not os.path.isdir(p):
         os.makedirs(p)
 
-full_size = (163*2, 352, 355)
+full_size = (163 * 2, 352, 355)
 split_size = (163, 352, 355)
 segment_size = (163, 352, 55)
 true_input_size = (189, 378, 81)
@@ -108,9 +113,9 @@ x_input_1 = Resize(full_size)(x_input_1)
 x_input_2 = Resize(full_size)(x_input_2)
 mask_input = Threshold(lower_threshold=300)(x_input_1)
 
-x_input_1 = Crop(mask_input, split_size)(x_input_1)
-x_input_2 = Crop(mask_input, split_size)(x_input_2)
-mask_input = Crop(mask_input, split_size)(mask_input)
+x_input_1 = GridCrop(mask_input, split_size)(x_input_1)
+x_input_2 = GridCrop(mask_input, split_size)(x_input_2)
+mask_input = GridCrop(mask_input, split_size)(mask_input)
 
 x_path_1, x_path_2 = RandomCropFullImage(
     mask_input, true_input_size, grid_size=segment_size, nonzero=True
@@ -121,7 +126,8 @@ x_dvn_val = Buffer(buffer_size=None, drop_remainder=False)(x_dvn_val)
 x_dvn_val = Put(x_input_1, keep_counts=True)(x_dvn_val)
 x_dvn_val = ArgMax()(x_dvn_val)
 
-dvn_model = DvnModel(outputs={"pred": [x_dvn_val]})
+dvn_model = DvnModel(outputs={"pred": [x_dvn_val], "mask": [mask_input]})
 
 if len(output_dirs) != 0:
     dvn_model.predict("pred", sampler, output_dirs=output_dirs)
+    # dvn_model.predict("mask", sampler, output_dirs=output_dirs)
