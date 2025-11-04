@@ -21,8 +21,8 @@ def get_cases_sampler(data_path):
     for _path in cases:
         files = os.listdir(_path)
         print("Processing:", _path)
-        op_file = [f for f in files if "OP-gesamt_SV" in f][0]
-        ip_file = [f for f in files if "IP-gesamt_SV" in f][0]
+        op_file = [f for f in files if "OP-gesamt_SV" in f and not f.startswith(".")][0]
+        ip_file = [f for f in files if "IP-gesamt_SV" in f and not f.startswith(".")][0]
         cid = os.path.basename(_path)
         mirc_case = Case(_path, cid)
         record = Record("0")
