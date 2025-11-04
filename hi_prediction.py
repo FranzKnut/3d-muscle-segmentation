@@ -1,12 +1,7 @@
 import os
-from deepvoxnet2.components.mirc import NiftiFileModality, Dataset, Case, Record
-from deepvoxnet2.components.mirc import Mirc
-from deepvoxnet2.components.sampler import MircSampler
 from deepvoxnet2.keras.models.unet_generalized import create_generalized_unet_model
 from deepvoxnet2.components.model import DvnModel
 from deepvoxnet2.components.transformers import (
-    Crop,
-    GridCrop,
     MircInput,
     KerasModel,
     Put,
@@ -14,37 +9,14 @@ from deepvoxnet2.components.transformers import (
     RandomCropFullImage,
     Buffer,
     ArgMax,
-    Resize,
     Threshold,
 )
+from get_cases import get_cases_sampler
 
-data_path = "./data/main"
-output_path = "./prediction/main"
+data_path = "./data/MAIN PROJECT 11-25"
+output_path = "./prediction/MAIN PROJECT 11-25 predictions"
 model_weights_path = "./models/hi_model_weights.h5"
-case_ids = [
-    d for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))
-]
-
-# create the mirc dataset
-dataset = Dataset("HI", data_path)
-for cid in case_ids:
-    _path = os.path.join(data_path, cid)
-    files = os.listdir(_path)
-    op_file = [f for f in files if "OP-gesamt_SV" in f][0]
-    ip_file = [f for f in files if "IP-gesamt_SV" in f][0]
-    mirc_case = Case(cid)
-    record = Record("0")
-    record.add(NiftiFileModality("OP", os.path.join(data_path, cid, op_file)))
-    record.add(NiftiFileModality("IP", os.path.join(data_path, cid, ip_file)))
-    # record.add(
-    #     NiftiFileModality(
-    #         "Mask", os.path.join(data_path, "Mask_{}_r.nii.gz".format(cid))
-    #     )
-    # )
-    mirc_case.add(record)
-    dataset.add(mirc_case)
-mirc = Mirc(dataset)
-sampler = MircSampler(mirc, shuffle=False)
+sampler = get_cases_sampler(data_path)
 
 output_dirs = [os.path.join(output_path, "{}".format(i.case_id)) for i in sampler]
 output_dirs.sort()
