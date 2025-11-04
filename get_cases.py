@@ -9,24 +9,25 @@ def get_cases_sampler(data_path):
     Walk data_path and return a list of directory paths that contain at least
     one .nii.gz file. Returned paths are absolute.
     """
-    case_dirs = []
+    cases = []
     for dirpath, dirnames, filenames in os.walk(data_path):
         for f in filenames:
             if f.lower().endswith(".nii.gz"):
-                case_dirs.append(os.path.abspath(dirpath))
+                cases.append(os.path.abspath(dirpath))
                 break
 
     # create the mirc dataset
     dataset = Dataset("HI", data_path)
     for _path in cases:
         files = os.listdir(_path)
+        print("Processing:", _path)
         op_file = [f for f in files if "OP-gesamt_SV" in f][0]
         ip_file = [f for f in files if "IP-gesamt_SV" in f][0]
         cid = os.path.basename(_path)
         mirc_case = Case(_path, cid)
         record = Record("0")
-        record.add(NiftiFileModality("OP", os.path.join(data_path, cid, op_file)))
-        record.add(NiftiFileModality("IP", os.path.join(data_path, cid, ip_file)))
+        record.add(NiftiFileModality("OP", os.path.join(_path, op_file)))
+        record.add(NiftiFileModality("IP", os.path.join(_path, ip_file)))
         # record.add(
         #     NiftiFileModality(
         #         "Mask", os.path.join(data_path, "Mask_{}_r.nii.gz".format(cid))
