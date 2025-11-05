@@ -88,4 +88,4 @@ x_dvn_val = ArgMax()(x_dvn_val)
 dvn_model = DvnModel(outputs={"li_pred": [x_dvn_val]})
 
 if len(output_dirs) != 0:
-    dvn_model.predict("li_pred", sampler, output_dirs=output_dirs)
+    dvn_model.predict("li_pred", sampler, output_dirs=output_dirs, return_predictions=False)

@@ -207,22 +207,24 @@ class DvnModel(object):
 
         return evaluations
 
-    def predict(self, key, sampler, mode="last", output_dirs=None, name_tag=None, save_x=True, save_y=False, save_sample_weight=False):
+    def predict(self, key, sampler, mode="last", output_dirs=None, name_tag=None, save_x=True, save_y=False, save_sample_weight=False, return_predictions=True):
         assert mode in ["all", "last"], "Will we only keep the last generated output (i.e. last) or everything (i.e. all)?"
         assert key in self.outputs, "There are no outputs available for this key."
         assert len(self.outputs[key]) >= 1, "Outputs must be in the format [x, y, sample_weight] and to use predict at least [x] must be available."
-        predictions = []
+        if return_predictions:
+            predictions = []
         for identifier_i, identifier in enumerate(sampler):
             start_time = time.time()
             samples = [sample for sample in Creator(self.outputs[key]).eval(identifier)][0 if mode == "all" else -1:]
             samples = [[Sample(np.concatenate([output[j][i] for output in samples]), np.concatenate([output[j][i].affine for output in samples])) for i in range(len(samples[0][j]))] for j in range(len(samples[0]))]
             if output_dirs is not None:
+                os.makedirs(output_dirs[identifier_i], exist_ok=True)
                 self.save_sample(key, samples, output_dirs[identifier_i], name_tag=name_tag, save_x=save_x, save_y=save_y, save_sample_weight=save_sample_weight)
-
-            predictions.append(samples)
+            if return_predictions:
+                predictions.append(samples)
             print("Predicted {} with {} in {:.0f} s.".format(sampler[identifier_i](), key, time.time() - start_time))
-
-        return predictions
+        if return_predictions:
+            return predictions
 
     @staticmethod
     def save_sample(key, sample, output_dir, name_tag=None, save_x=True, save_y=False, save_sample_weight=False):
@@ -237,6 +239,8 @@ class DvnModel(object):
 
                 if save_sample_weight and len(sample) > 2:
                     nib.save(nib.Nifti1Image(sample[2][i][j], sample[2][i].affine[j]), output_path[:-7] + "__sample_weight" + ".nii.gz")
+    
+                print("Saved prediction to {}".format(output_path))
 
     def summary(self, only_active=True):
         self.creator.summary(only_active=only_active)

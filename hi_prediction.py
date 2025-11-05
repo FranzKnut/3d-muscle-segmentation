@@ -19,10 +19,7 @@ model_weights_path = "./models/hi_model_weights.h5"
 sampler = get_cases_sampler(data_path)
 
 output_dirs = [os.path.join(output_path, "{}".format(i.case_id)) for i in sampler]
-output_dirs.sort()
-for p in output_dirs:
-    if not os.path.isdir(p):
-        os.makedirs(p)
+# output_dirs.sort()
 
 # full_size = (163 * 2, 352, 355)
 # split_size = (163, 352, 355)
@@ -99,5 +96,5 @@ x_dvn_val = ArgMax()(x_dvn_val)
 dvn_model = DvnModel(outputs={"hi_pred": [x_dvn_val]})
 
 if len(output_dirs) != 0:
-    dvn_model.predict("hi_pred", sampler, output_dirs=output_dirs)
+    dvn_model.predict("hi_pred", sampler, output_dirs=output_dirs, return_predictions=False)
     # dvn_model.predict("mask", sampler, output_dirs=output_dirs)

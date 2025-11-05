@@ -13,7 +13,7 @@ def get_cases_sampler(data_path):
     for dirpath, dirnames, filenames in os.walk(data_path):
         for f in filenames:
             if f.lower().endswith(".nii.gz"):
-                cases.append(os.path.abspath(dirpath))
+                cases.append(dirpath)
                 break
 
     # create the mirc dataset
