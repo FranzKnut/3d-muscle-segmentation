@@ -11,14 +11,12 @@ from deepvoxnet2.components.transformers import (
     ArgMax,
     Threshold,
 )
-from get_cases import get_cases_sampler
+from get_cases import get_cases_sampler, get_dirs
 
 data_path = "./data/MAIN PROJECT 11-25"
 output_path = "./prediction/MAIN PROJECT 11-25 predictions"
 model_weights_path = "./models/hi_model_weights.h5"
-sampler = get_cases_sampler(data_path)
-
-output_dirs = [os.path.join(output_path, "{}".format(i.case_id)) for i in sampler]
+cases = get_dirs(data_path)
 # output_dirs.sort()
 
 # full_size = (163 * 2, 352, 355)
@@ -95,6 +93,9 @@ x_dvn_val = ArgMax()(x_dvn_val)
 
 dvn_model = DvnModel(outputs={"hi_pred": [x_dvn_val]})
 
-if len(output_dirs) != 0:
-    dvn_model.predict("hi_pred", sampler, output_dirs=output_dirs, return_predictions=False)
-    # dvn_model.predict("mask", sampler, output_dirs=output_dirs)
+for p in cases:
+    sampler = get_cases_sampler([p], data_path)
+    output_dirs = [os.path.join(output_path, "{}".format(i.case_id)) for i in sampler]
+    if len(output_dirs) != 0:
+        dvn_model.predict("hi_pred", sampler, output_dirs=output_dirs, return_predictions=False)
+        # dvn_model.predict("mask", sampler, output_dirs=output_dirs)

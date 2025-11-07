@@ -4,20 +4,24 @@ from deepvoxnet2.components.mirc import Case, Dataset, Mirc, NiftiFileModality, 
 from deepvoxnet2.components.sampler import MircSampler
 
 
-def get_cases_sampler(data_path):
+def get_dirs(data_path):
+    dirs = []
+    for dirpath, dirnames, filenames in os.walk(data_path):
+        for f in filenames:
+            if f.lower().endswith(".nii.gz"):
+                dirs.append(dirpath)
+                break
+    return dirs
+
+
+def get_cases_sampler(cases, dataset_id=""):
     """
     Walk data_path and return a list of directory paths that contain at least
     one .nii.gz file. Returned paths are absolute.
     """
-    cases = []
-    for dirpath, dirnames, filenames in os.walk(data_path):
-        for f in filenames:
-            if f.lower().endswith(".nii.gz"):
-                cases.append(dirpath)
-                break
 
     # create the mirc dataset
-    dataset = Dataset("HI", data_path)
+    dataset = Dataset("HI", dataset_id)
     for _path in cases:
         files = os.listdir(_path)
         print("Processing:", _path)
