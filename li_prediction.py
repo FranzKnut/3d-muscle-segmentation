@@ -1,3 +1,4 @@
+import argparse
 import os
 from deepvoxnet2.keras.models.unet_generalized import create_generalized_unet_model
 from deepvoxnet2.components.model import DvnModel
@@ -13,7 +14,15 @@ from deepvoxnet2.components.transformers import (
 )
 from get_cases import get_cases_sampler, get_dirs
 
-data_path = "./data/MAIN PROJECT 11-25"
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--data_path",
+    type=str,
+    default="./data/MAIN PROJECT 11-25",
+    help="Path to the input data",
+)
+args = parser.parse_args()
+data_path = args.data_path
 output_path = "./prediction/MAIN PROJECT 11-25 predictions"
 model_weights_path = "./models/hi_model_weights.h5"
 cases = get_dirs(data_path)
